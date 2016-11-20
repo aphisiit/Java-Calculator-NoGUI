@@ -15,11 +15,11 @@ public class Main {
 		List<String> digitString = new ArrayList<String>();
 		List<String> operatorString = new ArrayList<String>();
 		List<String> stringExp = new ArrayList<String>();
-		int i;
+		int i,br = 0;
 		
 		try{
 			for(i = 0 ; i < stringInput.length() ; i++){
-				if(Character.isDigit(stringInput.charAt(i))){
+				if(Character.isDigit(stringInput.charAt(i)) || stringInput.charAt(i) == '.'){
 					tempString += stringInput.charAt(i)+"";					
 					if(i == stringInput.length() - 1){
 						if(tempString != ""){
@@ -31,8 +31,7 @@ public class Main {
 				}
 				
 				else if(stringInput.charAt(i) == '+' || stringInput.charAt(i) == '-' || stringInput.charAt(i) == '*' 
-						|| stringInput.charAt(i) == '/' ||stringInput.charAt(i) == '%' || stringInput.charAt(i) == '(' 
-						|| stringInput.charAt(i) == ')'){
+						|| stringInput.charAt(i) == '/' ||stringInput.charAt(i) == '%'){
 					if(tempString != ""){
 						digitString.add(tempString);
 						stringExp.add(tempString);
@@ -40,77 +39,116 @@ public class Main {
 					}
 					operatorString.add(stringInput.charAt(i)+"");
 					stringExp.add(stringInput.charAt(i)+"");
-				}				
+				}	
+				else if(stringInput.charAt(i) == '(' || stringInput.charAt(i) == ')'){
+					if(tempString != ""){
+						digitString.add(tempString);
+						stringExp.add(tempString);
+						tempString = "";
+					}
+					br++;
+					stringExp.add(stringInput.charAt(i)+"");
+				}
 			}
+			
+			if((digitString.size() + operatorString.size()) % 2 != 1 || digitString.size() <= operatorString.size()
+					|| (br % 2) != 0 ){
+					throw new IndexOutOfBoundsException();
+			}					
+
+			
 			System.out.println("Digit : " + digitString);
 			System.out.println("Operator : " + operatorString);
+			System.out.println("Expression : " + stringExp);
 			
-			if((digitString.size() + operatorString.size()) % 2 != 1 || digitString.size() <= operatorString.size()){
-				throw new IndexOutOfBoundsException();
-			}					
-							
-			System.out.println("Before Calcualate Exp String : " + stringExp);
-			float tempFloat = 0.0f;
+//						
+			List<String> tempList;
+			float tempFloat;
+			while(stringExp.lastIndexOf("(") >= 0){
 				
-			for(i=1 ; i < stringExp.size() ; i++){
-				tempString = stringExp.get(i);
-				//System.out.println(stringExp.get(i));
-//				System.out.println(i + " : " + tempString);
-				if(tempString.equals("*")){
-					tempFloat = Float.parseFloat(stringExp.get(i - 1)) * Float.parseFloat(stringExp.get(i+1));
-					stringExp.set(i-1, Float.toString(tempFloat));
-//					System.out.println("Do *");
-					stringExp.remove(i);
-					stringExp.remove(i);
-					i--;
-					//i -= 2;
-				}
-				else if(tempString.equals("/")){
-					tempFloat = Float.parseFloat(stringExp.get(i - 1)) / Float.parseFloat(stringExp.get(i+1));
-					stringExp.set(i-1, Float.toString(tempFloat));
-//					System.out.println("Do /");
-					stringExp.remove(i);
-					stringExp.remove(i);
-					i--;
-					//i -= 2;
-				}
-				else if(tempString.equals("%")){
-					tempFloat = Float.parseFloat(stringExp.get(i - 1)) % Float.parseFloat(stringExp.get(i+1));
-					stringExp.set(i-1, Float.toString(tempFloat));
-//					System.out.println("Do %");
-					stringExp.remove(i);
-					stringExp.remove(i);
-					i--;
-					///i -= 2;
-				}				
+				System.out.println("START While");
+				tempList = stringExp.subList(stringExp.lastIndexOf("(") + 1, stringExp.indexOf(")"));
+				tempFloat = doMultiDivide(tempList);				
+//				System.out.println("tempList = " + tempList);
+//				System.out.println("StringExp = " + stringExp);
+//				System.out.println("End While");
+				
+				//stringExp.set(startRB, Float.toString(tempFloat));
+				System.out.println("tempList = " + tempList);
+				System.out.println("StringExp = " + stringExp);
+				
+				if(stringExp.lastIndexOf("(") >= 0)
+					stringExp.remove(stringExp.lastIndexOf("("));
+				if(stringExp.indexOf(")") >= 0)
+					stringExp.remove(stringExp.indexOf(")"));
+				
+				System.out.println("END While");
 			}
+						
+			System.out.println("Expression : " + stringExp);
+			System.out.println("Expression : " + stringExp.get(0));
 			
-			System.out.println("Middle : " + stringExp);
+			// ==========================> Print Result <=============================
 			
-			for(i=1 ; i < stringExp.size() ; i++){
-				tempString = stringExp.get(i);
-				if(tempString.equals("+")){
-					tempFloat = Float.parseFloat(stringExp.get(i - 1)) + Float.parseFloat(stringExp.get(i + 1));
-					stringExp.set(i-1, Float.toString(tempFloat));
-					stringExp.remove(i);
-					stringExp.remove(i);
-					i--;
-				}
-				else if(tempString.equals("-")){
-					tempFloat = Float.parseFloat(stringExp.get(i - 1)) - Float.parseFloat(stringExp.get(i + 1));
-					stringExp.set(i-1, Float.toString(tempFloat));
-					stringExp.remove(i);
-					stringExp.remove(i);
-					i--;
-				}
-			}
-			//}
-			//End Experiments string
-			System.out.println("After Calcualate Exp String : " + stringExp.get(0));
-			
+			System.out.println("Result ==> " + doMultiDivide(stringExp));
+						
 		}
-		catch(IndexOutOfBoundsException e){
-			System.out.print("You enter wrong string, Try again !!!");
-		}					
+		catch(Exception e){
+			System.out.print(e);
+		}							
+	}
+	
+	public static float doMultiDivide(List<String> stringExp){
+		
+		//float sum = 0f;
+		float tempFloat = Float.parseFloat(stringExp.get(0));
+		
+		Object tempString;
+		for(int i=1 ; i < stringExp.size() ; i++){
+			tempString = stringExp.get(i);
+			if(tempString.equals("*")){
+				tempFloat = Float.parseFloat(stringExp.get(i - 1)) * Float.parseFloat(stringExp.get(i+1));
+				stringExp.set(i-1, Float.toString(tempFloat));
+				stringExp.remove(i);
+				stringExp.remove(i);
+				i--;
+			}
+			else if(tempString.equals("/")){
+				tempFloat = Float.parseFloat(stringExp.get(i - 1)) / Float.parseFloat(stringExp.get(i+1));
+				stringExp.set(i-1, Float.toString(tempFloat));
+				stringExp.remove(i);
+				stringExp.remove(i);
+				i--;
+			}
+			else if(tempString.equals("%")){
+				tempFloat = Float.parseFloat(stringExp.get(i - 1)) % Float.parseFloat(stringExp.get(i+1));
+				stringExp.set(i-1, Float.toString(tempFloat));
+				stringExp.remove(i);
+				stringExp.remove(i);
+				i--;
+			}				
+		}
+		
+		//System.out.println("Middle : " + stringExp);
+		
+		for(int i=1 ; i < stringExp.size() ; i++){
+			tempString = stringExp.get(i);
+			if(tempString.equals("+")){
+				tempFloat = Float.parseFloat(stringExp.get(i - 1)) + Float.parseFloat(stringExp.get(i + 1));
+				stringExp.set(i-1, Float.toString(tempFloat));
+				stringExp.remove(i);
+				stringExp.remove(i);
+				i--;
+			}
+			else if(tempString.equals("-")){
+				tempFloat = Float.parseFloat(stringExp.get(i - 1)) - Float.parseFloat(stringExp.get(i + 1));
+				stringExp.set(i-1, Float.toString(tempFloat));
+				stringExp.remove(i);
+				stringExp.remove(i);
+				i--;
+			}
+		}
+		
+		return tempFloat;
 	}
 }

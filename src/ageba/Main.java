@@ -63,6 +63,7 @@ public class Main {
 			
 //						
 			List<String> tempList;
+			@SuppressWarnings("unused")
 			float tempFloat;
 			while(stringExp.lastIndexOf("(") >= 0){
 				
@@ -94,7 +95,7 @@ public class Main {
 						
 		}
 		catch(Exception e){
-			System.out.print(e);
+			System.out.print("Invalid number format");
 		}							
 	}
 	
